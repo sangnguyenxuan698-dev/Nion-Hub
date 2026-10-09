@@ -1,6 +1,5 @@
 -- ===============================================================
---          VHOC HUB - BLOX FRUITS [UPDATE 30] (FLUENT UI)
---          Dark Minimalist & Siêu mượt mà cho Mobile/Máy yếu
+--          VHOC HUB - BLOX FRUITS [UPDATE 30] (FIXED)
 -- ===============================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -8,15 +7,22 @@ if CoreGui:FindFirstChild("FluentHubUI") then
     CoreGui.FluentHubUI:Destroy()
 end
 
--- Sử dụng Fluent UI (Dark theme siêu ngầu, tối giản, mượt mà)
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/Fluent.lua"))()
+-- Sử dụng link Raw trực tiếp của Fluent UI để tránh lỗi chuyển hướng trên máy ảo
+local successLoad, Fluent = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Main.lua"))()
+end)
+
+if not successLoad or not Fluent then
+    warn("Không thể tải được Fluent UI! Kiểm tra lại mạng máy ảo.")
+    return
+end
 
 local Window = Fluent:CreateWindow({
     Title = "VHoc Hub | Blox Fruits [Update 30]",
     SubTitle = "Dark Edition - Max Level 3000",
     TabWidth = 160,
     Size = UDim2.fromOffset(560, 340),
-    Acrylic = false, -- Tắt hiệu ứng mờ kính để giữ FPS tối đa cho máy yếu
+    Acrylic = false,
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.RightControl
 })
@@ -36,10 +42,8 @@ local Options = Fluent.Options
 
 -- Biến toàn cục
 getgenv().AutoFarm = false
-getgenv().AutoQuest = false
 getgenv().SelectWeapon = "Melee"
 getgenv().Fast_Delay = 0.05
-getgenv().AntiBand = true
 
 local plr = game.Players.LocalPlayer
 local rs = game:GetService("ReplicatedStorage")
@@ -114,9 +118,8 @@ task.spawn(function()
     end
 end)
 
--- ================= TAB 2: FRUIT (TRÁI ÁC QUỶ) =================
+-- ================= TAB 2: FRUIT =================
 local FruitGroup = Tabs.Fruit:AddLeftGroupbox("Kho & Cửa Hàng Trái")
-
 FruitGroup:AddButton({
     Title = "Tự Động Cất Trái (Store Fruit)",
     Callback = function()
@@ -130,83 +133,8 @@ FruitGroup:AddButton({
     end
 })
 
-FruitGroup:AddButton({
-    Title = "Random Trái Ác Quỷ",
-    Callback = function()
-        pcall(function() rs.Remotes.CommF_:InvokeServer("Cousin", "Buy") end)
-    end
-})
-
--- ================= TAB 3: RAID (ĐỘT KÍCH) =================
-local RaidGroup = Tabs.Raid:AddLeftGroupbox("Chức Năng Đột Kích")
-
-RaidGroup:AddToggle("ToggleAwake", {
-    Title = "Tự Động Thức Tỉnh Kỹ Năng",
-    Default = false
-}):OnChanged(function()
-    getgenv().AutoAwaken = Options.ToggleAwake.Value
-end)
-
-task.spawn(function()
-    while task.wait(1) do
-        if getgenv().AutoAwaken then
-            pcall(function() rs.Remotes.CommF_:InvokeServer("Awakener", "Awaken") end)
-        end
-    end
-end)
-
--- ================= TAB 4: SEA (SỰ KIỆN BIỂN) =================
-local SeaGroup = Tabs.Sea:AddLeftGroupbox("Di Chuyển Nhanh")
-
-SeaGroup:AddButton({
-    Title = "Bay Đến Đảo Gần Nhất",
-    Callback = function() Tween(CFrame.new(0, 300, 0)) end
-})
-
--- ================= TAB 5: SHOP (CỬA HÀNG) =================
-local ShopGroup = Tabs.Shop:AddLeftGroupbox("Mua Kỹ Năng Cơ Bản")
-
-ShopGroup:AddButton({
-    Title = "Mua Buso Haki",
-    Callback = function() rs.Remotes.CommF_:InvokeServer("BuyHaki", "Buso") end
-})
-ShopGroup:AddButton({
-    Title = "Mua Soru",
-    Callback = function() rs.Remotes.CommF_:InvokeServer("BuyHaki", "Soru") end
-})
-ShopGroup:AddButton({
-    Title = "Mua Ken Haki",
-    Callback = function() rs.Remotes.CommF_:InvokeServer("KenTalk", "Buy") end
-})
-
--- ================= TAB 6: SETTING (CÀI ĐẶT) =================
-local SettingGroup = Tabs.Setting:AddLeftGroupbox("Auto Nâng Điểm Kỹ Năng")
-local _spMelee, _spDef, _spSword, _spGun, _spFruit = false, false, false, false, false
-
-SettingGroup:AddToggle("SPMelee", {Title = "Nâng Melee", Default = false}):OnChanged(function(v) _spMelee = v end)
-SettingGroup:AddToggle("SPDef", {Title = "Nâng Defense", Default = false}):OnChanged(function(v) _spDef = v end)
-SettingGroup:AddToggle("SPSword", {Title = "Nâng Sword", Default = false}):OnChanged(function(v) _spSword = v end)
-SettingGroup:AddToggle("SPGun", {Title = "Nâng Gun", Default = false}):OnChanged(function(v) _spGun = v end)
-SettingGroup:AddToggle("SPFruit", {Title = "Nâng Trái Ác Quỷ", Default = false}):OnChanged(function(v) _spFruit = v end)
-
-task.spawn(function()
-    while task.wait(0.5) do
-        pcall(function()
-            if plr.Data.Points.Value >= 1 then
-                local function ap(s) rs.Remotes.CommF_:InvokeServer("AddPoint", s, 1) end
-                if _spMelee then ap("Melee") end
-                if _spDef then ap("Defense") end
-                if _spSword then ap("Sword") end
-                if _spGun then ap("Gun") end
-                if _spFruit then ap("Demon Fruit") end
-            end
-        end)
-    end
-end)
-
--- ================= TAB 7: MISC (TIỆN ÍCH & TỐI ƯU) =================
+-- ================= TAB 7: MISC =================
 local MiscGroup = Tabs.Misc:AddLeftGroupbox("Tối Ưu Hóa & Tiện Ích")
-
 MiscGroup:AddButton({
     Title = "Tối Ưu FPS Boost (Tắt Hiệu Ứng Nặng)",
     Callback = function()
@@ -215,32 +143,16 @@ MiscGroup:AddButton({
             for _, v in pairs(game:GetDescendants()) do
                 if v:IsA("Decal") or v:IsA("Texture") then v.Transparency = 1
                 elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then v.Lifetime = NumberRange.new(0)
-                elseif v:IsA("Fire") or v:IsA("Smoke") then v.Enabled = false
                 end
             end
         end)
     end
 })
 
-MiscGroup:AddButton({
-    Title = "Nhập Tất Cả Code Update 30 Mới Nhất",
-    Callback = function()
-        local codeList = {
-            "SUB2GAMERROBOT_RESET1", "ADMINDARES", "NOOB2ADMIN", "KITT_RESET", 
-            "Sub2Fer999", "Enyu_is_Pro", "MagicBus", "KittGaming", "Sub2CaptainMaui",
-            "Sub2OfficialNoobie", "TheGreatAce", "Sub2NoobMaster123", "Sub2Daigrock", "Axiore"
-        }
-        for _, code in ipairs(codeList) do
-            pcall(function() rs.Remotes.Redeem:InvokeServer(code) end)
-            task.wait(0.1)
-        end
-    end
-})
-
 Fluent:Notify({
     Title = "VHoc Hub Loaded",
-    Content = "Đã tải giao diện Fluent Dark tối giản thành công!",
+    Content = "Đã tải giao diện thành công!",
     Duration = 5
 })
 
-print("✅ VHoc Hub [Fluent Dark] đã khởi chạy thành công!")
+print("✅ VHoc Hub [Fluent Dark Raw] đã khởi chạy thành công!")
