@@ -1,36 +1,38 @@
 -- ===============================================================
---                 VHOC HUB - BLOX FRUITS [UPDATE 30]
---          Tối ưu hóa siêu mượt cho máy yếu / Mobile / Roblox
+--          VHOC HUB - BLOX FRUITS [UPDATE 30] (FLUENT UI)
+--          Dark Minimalist & Siêu mượt mà cho Mobile/Máy yếu
 -- ===============================================================
 
 local CoreGui = game:GetService("CoreGui")
-if CoreGui:FindFirstChild("VHocHubUI") then
-    CoreGui.VHocHubUI:Destroy()
+if CoreGui:FindFirstChild("FluentHubUI") then
+    CoreGui.FluentHubUI:Destroy()
 end
 
--- Sử dụng Rayfield UI (Cực kỳ ổn định và nhẹ mượt cho máy yếu)
-local Library = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Sử dụng Fluent UI (Dark theme siêu ngầu, tối giản, mượt mà)
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/Fluent.lua"))()
 
-local Window = Library:CreateWindow({
+local Window = Fluent:CreateWindow({
     Title = "VHoc Hub | Blox Fruits [Update 30]",
-    SubTitle = "Tối Ưu Máy Yếu - Max Level 3000",
+    SubTitle = "Dark Edition - Max Level 3000",
     TabWidth = 160,
-    Size = UDim2.new(0, 560, 0, 320),
-    Acrylic = false, -- Tắt hiệu ứng mờ nặng để cứu FPS cho máy yếu
+    Size = UDim2.fromOffset(560, 340),
+    Acrylic = false, -- Tắt hiệu ứng mờ kính để giữ FPS tối đa cho máy yếu
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.RightControl
 })
 
 -- Khởi tạo các Tabs
 local Tabs = {
-    Main = Window:AddTab({ Title = "Chính / Farm", Icon = "rbxassetid://6034328889" }),
-    Fruit = Window:AddTab({ Title = "Trái Ác Quỷ", Icon = "rbxassetid://6023426915" }),
-    Raid = Window:AddTab({ Title = "Đột Kích (Raid)", Icon = "rbxassetid://6023426915" }),
-    Sea = Window:AddTab({ Title = "Sự Kiện Biển", Icon = "rbxassetid://6034328889" }),
-    Shop = Window:AddTab({ Title = "Cửa Hàng", Icon = "rbxassetid://6034328889" }),
-    Setting = Window:AddTab({ Title = "Cài Đặt", Icon = "rbxassetid://6023426915" }),
-    Misc = Window:AddTab({ Title = "Tiện Ích", Icon = "rbxassetid://6034328889" })
+    Main = Window:AddTab({ Title = "Chính / Farm", Icon = "home" }),
+    Fruit = Window:AddTab({ Title = "Trái Ác Quỷ", Icon = "gift" }),
+    Raid = Window:AddTab({ Title = "Đột Kích (Raid)", Icon = "sword" }),
+    Sea = Window:AddTab({ Title = "Sự Kiện Biển", Icon = "compass" }),
+    Shop = Window:AddTab({ Title = "Cửa Hàng", Icon = "shopping-cart" }),
+    Setting = Window:AddTab({ Title = "Cài Đặt", Icon = "settings" }),
+    Misc = Window:AddTab({ Title = "Tiện Ích", Icon = "tool" })
 }
+
+local Options = Fluent.Options
 
 -- Biến toàn cục
 getgenv().AutoFarm = false
@@ -73,18 +75,20 @@ function Tween(cf)
 end
 
 -- ================= TAB 1: MAIN (FARM & CÀY CẤP) =================
-Tabs.Main:AddSection("Hệ Thống Farm (Hỗ trợ Update 30 - Max 3000)")
-Tabs.Main:AddToggle("ToggleFarm", {
-    ["Title"] = "Bật/Tắt Auto Farm Level",
-    ["Default"] = false
-}):OnChanged(function(v)
-    getgenv().AutoFarm = v
+local MainGroup = Tabs.Main:AddLeftGroupbox("Hệ Thống Cày Cấp")
+
+MainGroup:AddToggle("ToggleFarm", {
+    Title = "Bật/Tắt Auto Farm Level",
+    Default = false
+}):OnChanged(function()
+    getgenv().AutoFarm = Options.ToggleFarm.Value
 end)
 
-Tabs.Main:AddDropdown("DropWeapon", {
-    ["Title"] = "Chọn Vũ Khí Farm",
-    ["Values"] = {"Melee", "Sword", "Gun", "Blox Fruit"},
-    ["Default"] = "Melee"
+MainGroup:AddDropdown("DropWeapon", {
+    Title = "Chọn Vũ Khí Farm",
+    Values = {"Melee", "Sword", "Gun", "Blox Fruit"},
+    Multi = false,
+    Default = 1,
 }):OnChanged(function(v)
     getgenv().SelectWeapon = v
 end)
@@ -101,7 +105,7 @@ task.spawn(function()
                             task.wait(getgenv().Fast_Delay)
                             Tween(enemy.HumanoidRootPart.CFrame * CFrame.new(0, 25, 0))
                             enemy.HumanoidRootPart.CanCollide = false
-                            sethiddenproperty(plr, "SimulationRadius", math.huge)
+                            pcall(function() sethiddenproperty(plr, "SimulationRadius", math.huge) end)
                         until not getgenv().AutoFarm or not enemy.Parent or enemy.Humanoid.Health <= 0
                     end
                 end
@@ -111,10 +115,11 @@ task.spawn(function()
 end)
 
 -- ================= TAB 2: FRUIT (TRÁI ÁC QUỶ) =================
-Tabs.Fruit:AddSection("Kho & Lưu Trữ Trái")
-Tabs.Fruit:AddButton({
-    ["Title"] = "Tự Động Cất Trái (Store Fruit)",
-    ["Callback"] = function()
+local FruitGroup = Tabs.Fruit:AddLeftGroupbox("Kho & Cửa Hàng Trái")
+
+FruitGroup:AddButton({
+    Title = "Tự Động Cất Trái (Store Fruit)",
+    Callback = function()
         pcall(function()
             for _, v in pairs(plr.Backpack:GetChildren()) do
                 if v:IsA("Tool") and v:FindFirstChild("Fruit") then
@@ -125,66 +130,64 @@ Tabs.Fruit:AddButton({
     end
 })
 
-Tabs.Fruit:AddButton({
-    ["Title"] = "Random Trái Ác Quỷ",
-    ["Callback"] = function()
-        pcall(function()
-            rs.Remotes.CommF_:InvokeServer("Cousin", "Buy")
-        end)
+FruitGroup:AddButton({
+    Title = "Random Trái Ác Quỷ",
+    Callback = function()
+        pcall(function() rs.Remotes.CommF_:InvokeServer("Cousin", "Buy") end)
     end
 })
 
 -- ================= TAB 3: RAID (ĐỘT KÍCH) =================
-Tabs.Raid:AddSection("Chức Năng Đột Kích")
-Tabs.Raid:AddToggle("ToggleAwake", {
-    ["Title"] = "Tự Động Thức Tỉnh Kỹ Năng",
-    ["Default"] = false
-}):OnChanged(function(v)
-    getgenv().AutoAwaken = v
+local RaidGroup = Tabs.Raid:AddLeftGroupbox("Chức Năng Đột Kích")
+
+RaidGroup:AddToggle("ToggleAwake", {
+    Title = "Tự Động Thức Tỉnh Kỹ Năng",
+    Default = false
+}):OnChanged(function()
+    getgenv().AutoAwaken = Options.ToggleAwake.Value
 end)
 
 task.spawn(function()
     while task.wait(1) do
         if getgenv().AutoAwaken then
-            pcall(function()
-                rs.Remotes.CommF_:InvokeServer("Awakener", "Awaken")
-            end)
+            pcall(function() rs.Remotes.CommF_:InvokeServer("Awakener", "Awaken") end)
         end
     end
 end)
 
 -- ================= TAB 4: SEA (SỰ KIỆN BIỂN) =================
-Tabs.Sea:AddSection("Tính Năng Di Chuyển & Biển")
-Tabs.Sea:AddButton({
-    ["Title"] = "Bay Đến Đảo Gần Nhất",
-    ["Callback"] = function()
-        Tween(CFrame.new(0, 300, 0))
-    end
+local SeaGroup = Tabs.Sea:AddLeftGroupbox("Di Chuyển Nhanh")
+
+SeaGroup:AddButton({
+    Title = "Bay Đến Đảo Gần Nhất",
+    Callback = function() Tween(CFrame.new(0, 300, 0)) end
 })
 
 -- ================= TAB 5: SHOP (CỬA HÀNG) =================
-Tabs.Shop:AddSection("Mua Khả Năng Cơ Bản")
-Tabs.Shop:AddButton({
-    ["Title"] = "Mua Buso Haki",
-    ["Callback"] = function() rs.Remotes.CommF_:InvokeServer("BuyHaki", "Buso") end
+local ShopGroup = Tabs.Shop:AddLeftGroupbox("Mua Kỹ Năng Cơ Bản")
+
+ShopGroup:AddButton({
+    Title = "Mua Buso Haki",
+    Callback = function() rs.Remotes.CommF_:InvokeServer("BuyHaki", "Buso") end
 })
-Tabs.Shop:AddButton({
-    ["Title"] = "Mua Soru",
-    ["Callback"] = function() rs.Remotes.CommF_:InvokeServer("BuyHaki", "Soru") end
+ShopGroup:AddButton({
+    Title = "Mua Soru",
+    Callback = function() rs.Remotes.CommF_:InvokeServer("BuyHaki", "Soru") end
 })
-Tabs.Shop:AddButton({
-    ["Title"] = "Mua Ken Haki",
-    ["Callback"] = function() rs.Remotes.CommF_:InvokeServer("KenTalk", "Buy") end
+ShopGroup:AddButton({
+    Title = "Mua Ken Haki",
+    Callback = function() rs.Remotes.CommF_:InvokeServer("KenTalk", "Buy") end
 })
 
 -- ================= TAB 6: SETTING (CÀI ĐẶT) =================
-Tabs.Setting:AddSection("Nâng Điểm Kỹ Năng Tự Động")
+local SettingGroup = Tabs.Setting:AddLeftGroupbox("Auto Nâng Điểm Kỹ Năng")
 local _spMelee, _spDef, _spSword, _spGun, _spFruit = false, false, false, false, false
-Tabs.Setting:AddToggle("SPMelee", {["Title"] = "Melee", ["Default"] = false}):OnChanged(function(v) _spMelee = v end)
-Tabs.Setting:AddToggle("SPDef", {["Title"] = "Defense", ["Default"] = false}):OnChanged(function(v) _spDef = v end)
-Tabs.Setting:AddToggle("SPSword", {["Title"] = "Sword", ["Default"] = false}):OnChanged(function(v) _spSword = v end)
-Tabs.Setting:AddToggle("SPGun", {["Title"] = "Gun", ["Default"] = false}):OnChanged(function(v) _spGun = v end)
-Tabs.Setting:AddToggle("SPFruit", {["Title"] = "Trái Ác Quỷ", ["Default"] = false}):OnChanged(function(v) _spFruit = v end)
+
+SettingGroup:AddToggle("SPMelee", {Title = "Nâng Melee", Default = false}):OnChanged(function(v) _spMelee = v end)
+SettingGroup:AddToggle("SPDef", {Title = "Nâng Defense", Default = false}):OnChanged(function(v) _spDef = v end)
+SettingGroup:AddToggle("SPSword", {Title = "Nâng Sword", Default = false}):OnChanged(function(v) _spSword = v end)
+SettingGroup:AddToggle("SPGun", {Title = "Nâng Gun", Default = false}):OnChanged(function(v) _spGun = v end)
+SettingGroup:AddToggle("SPFruit", {Title = "Nâng Trái Ác Quỷ", Default = false}):OnChanged(function(v) _spFruit = v end)
 
 task.spawn(function()
     while task.wait(0.5) do
@@ -201,11 +204,12 @@ task.spawn(function()
     end
 end)
 
--- ================= TAB 7: MISC (TIỆN ÍCH & TỐI ƯU MÁY YẾU) =================
-Tabs.Misc:AddSection("Tối Ưu Hóa Máy Yếu & FPS")
-Tabs.Misc:AddButton({
-    ["Title"] = "Tối Ưu FPS Boost (Tắt Hiệu Ứng Nặng)",
-    ["Callback"] = function()
+-- ================= TAB 7: MISC (TIỆN ÍCH & TỐI ƯU) =================
+local MiscGroup = Tabs.Misc:AddLeftGroupbox("Tối Ưu Hóa & Tiện Ích")
+
+MiscGroup:AddButton({
+    Title = "Tối Ưu FPS Boost (Tắt Hiệu Ứng Nặng)",
+    Callback = function()
         pcall(function()
             settings().Rendering.QualityLevel = "Level01"
             for _, v in pairs(game:GetDescendants()) do
@@ -218,26 +222,9 @@ Tabs.Misc:AddButton({
     end
 })
 
-Tabs.Misc:AddButton({
-    ["Title"] = "Đổi Server Nhanh (Server Hop)",
-    ["Callback"] = function()
-        pcall(function()
-            local Http = game:GetService("HttpService")
-            local TPS = game:GetService("TeleportService")
-            local Servers = Http:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
-            for _, s in pairs(Servers.data) do
-                if s.playing < s.maxPlayers then
-                    TPS:TeleportToPlaceInstance(game.PlaceId, s.id, plr)
-                    break
-                end
-            end
-        end)
-    end
-})
-
-Tabs.Misc:AddButton({
-    ["Title"] = "Nhập Tất Cả Code Update 30 Mới Nhất",
-    ["Callback"] = function()
+MiscGroup:AddButton({
+    Title = "Nhập Tất Cả Code Update 30 Mới Nhất",
+    Callback = function()
         local codeList = {
             "SUB2GAMERROBOT_RESET1", "ADMINDARES", "NOOB2ADMIN", "KITT_RESET", 
             "Sub2Fer999", "Enyu_is_Pro", "MagicBus", "KittGaming", "Sub2CaptainMaui",
@@ -250,4 +237,10 @@ Tabs.Misc:AddButton({
     end
 })
 
-print("✅ VHoc Hub [Update 30] đã load thành công toàn bộ tính năng mượt mà!")
+Fluent:Notify({
+    Title = "VHoc Hub Loaded",
+    Content = "Đã tải giao diện Fluent Dark tối giản thành công!",
+    Duration = 5
+})
+
+print("✅ VHoc Hub [Fluent Dark] đã khởi chạy thành công!")
