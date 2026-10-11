@@ -1,158 +1,129 @@
--- ===============================================================
---          VHOC HUB - BLOX FRUITS [UPDATE 30] (FIXED)
--- ===============================================================
+-- Khoi tao Thu vien Redz Lib (Version Moinhat / Fix bug)
+local RedzLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/realredz/BloxFruits/refs/heads/main/Source.lua"))()
 
-local CoreGui = game:GetService("CoreGui")
-if CoreGui:FindFirstChild("FluentHubUI") then
-    CoreGui.FluentHubUI:Destroy()
-end
-
--- Sử dụng link Raw trực tiếp của Fluent UI để tránh lỗi chuyển hướng trên máy ảo
-local successLoad, Fluent = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Main.lua"))()
-end)
-
-if not successLoad or not Fluent then
-    warn("Không thể tải được Fluent UI! Kiểm tra lại mạng máy ảo.")
-    return
-end
-
-local Window = Fluent:CreateWindow({
-    Title = "VHoc Hub | Blox Fruits [Update 30]",
-    SubTitle = "Dark Edition - Max Level 3000",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(560, 340),
-    Acrylic = false,
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.RightControl
+-- Tao Cua so Menu chinh (Window)
+local Window = RedzLib:MakeWindow({
+    Title = "Nion Hub | Blox Fruits",
+    SubTitle = "By VHoc",
+    SaveFolder = "NionHubConfig"
 })
 
--- Khởi tạo các Tabs
-local Tabs = {
-    Main = Window:AddTab({ Title = "Chính / Farm", Icon = "home" }),
-    Fruit = Window:AddTab({ Title = "Trái Ác Quỷ", Icon = "gift" }),
-    Raid = Window:AddTab({ Title = "Đột Kích (Raid)", Icon = "sword" }),
-    Sea = Window:AddTab({ Title = "Sự Kiện Biển", Icon = "compass" }),
-    Shop = Window:AddTab({ Title = "Cửa Hàng", Icon = "shopping-cart" }),
-    Setting = Window:AddTab({ Title = "Cài Đặt", Icon = "settings" }),
-    Misc = Window:AddTab({ Title = "Tiện Ích", Icon = "tool" })
-}
+-- Tạo nút thu nhỏ/mở lại Menu trên màn hình điện thoại (Icon Toggle Button)
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://18751493361", BackgroundTransparency = 0.5 },
+    Corner = { CornerRadius = UDim.new(0, 6) }
+})
 
-local Options = Fluent.Options
+-- ===================================================
+-- TAB 1: THÔNG TIN (INFO)
+-- ===================================================
+local TabInfo = Window:MakeTab({"Thông Tin", "info"})
 
--- Biến toàn cục
-getgenv().AutoFarm = false
-getgenv().SelectWeapon = "Melee"
-getgenv().Fast_Delay = 0.05
+TabInfo:AddSection({"Thông tin Script"})
+TabInfo:AddDiscordInvite({
+    Title = "Nion Hub Community",
+    Desc = "Tham gia Discord để cập nhật script mới nhất!",
+    Logo = "rbxassetid://18751493361",
+    Invite = "https://discord.gg/nionhub"
+})
 
-local plr = game.Players.LocalPlayer
-local rs = game:GetService("ReplicatedStorage")
-local ws = game:GetService("Workspace")
+TabInfo:AddParagraph({"Tác Giả", "Script được phát triển bởi VHoc"})
+TabInfo:AddParagraph({"Trạng Thái", "Hoạt động tốt trên Mobile / Cloud Phone!"})
 
--- Hàm hỗ trợ cốt lõi
-function AutoHaki()
-    pcall(function()
-        if plr.Character and not plr.Character:FindFirstChild("HasBuso") then
-            rs.Remotes.CommF_:InvokeServer("Buso")
-        end
-    end)
-end
+-- ===================================================
+-- TAB 2: AUTO FARM (TỰ ĐỘNG CÀY)
+-- ===================================================
+local TabFarm = Window:MakeTab({"Auto Farm", "swords"})
 
-function EquipTool(toolName)
-    pcall(function()
-        local char = plr.Character
-        local backpack = plr.Backpack
-        if char and not char:FindFirstChildOfClass("Tool") then
-            local tool = backpack:FindFirstChild(toolName) or char:FindFirstChild(toolName)
-            if tool then char.Humanoid:EquipTool(tool) end
-        end
-    end)
-end
+TabFarm:AddSection({"Tự Động Cày Level"})
 
-function Tween(cf)
-    pcall(function()
-        local char = plr.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = cf
-        end
-    end)
-end
-
--- ================= TAB 1: MAIN (FARM & CÀY CẤP) =================
-local MainGroup = Tabs.Main:AddLeftGroupbox("Hệ Thống Cày Cấp")
-
-MainGroup:AddToggle("ToggleFarm", {
-    Title = "Bật/Tắt Auto Farm Level",
-    Default = false
-}):OnChanged(function()
-    getgenv().AutoFarm = Options.ToggleFarm.Value
-end)
-
-MainGroup:AddDropdown("DropWeapon", {
-    Title = "Chọn Vũ Khí Farm",
-    Values = {"Melee", "Sword", "Gun", "Blox Fruit"},
-    Multi = false,
-    Default = 1,
-}):OnChanged(function(v)
-    getgenv().SelectWeapon = v
-end)
-
-task.spawn(function()
-    while task.wait() do
-        if getgenv().AutoFarm then
-            pcall(function()
-                AutoHaki()
-                EquipTool(getgenv().SelectWeapon)
-                for _, enemy in pairs(ws.Enemies:GetChildren()) do
-                    if enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
-                        repeat
-                            task.wait(getgenv().Fast_Delay)
-                            Tween(enemy.HumanoidRootPart.CFrame * CFrame.new(0, 25, 0))
-                            enemy.HumanoidRootPart.CanCollide = false
-                            pcall(function() sethiddenproperty(plr, "SimulationRadius", math.huge) end)
-                        until not getgenv().AutoFarm or not enemy.Parent or enemy.Humanoid.Health <= 0
-                    end
-                end
-            end)
-        end
-    end
-end)
-
--- ================= TAB 2: FRUIT =================
-local FruitGroup = Tabs.Fruit:AddLeftGroupbox("Kho & Cửa Hàng Trái")
-FruitGroup:AddButton({
-    Title = "Tự Động Cất Trái (Store Fruit)",
-    Callback = function()
-        pcall(function()
-            for _, v in pairs(plr.Backpack:GetChildren()) do
-                if v:IsA("Tool") and v:FindFirstChild("Fruit") then
-                    rs.Remotes.CommF_:InvokeServer("StoreFruit", v.Name)
-                end
+-- Toggle Auto Farm Level
+TabFarm:AddToggle({
+    Name = "Auto Farm Level",
+    Default = false,
+    Callback = function(Value)
+        _G.AutoFarmLevel = Value
+        print("Auto Farm Level: ", Value)
+        
+        -- Vòng lặp Auto Farm mẫu
+        task.spawn(function()
+            while _G.AutoFarmLevel do
+                task.wait(0.1)
+                -- Code Auto Farm Level của bạn đặt ở đây
             end
         end)
     end
 })
 
--- ================= TAB 7: MISC =================
-local MiscGroup = Tabs.Misc:AddLeftGroupbox("Tối Ưu Hóa & Tiện Ích")
-MiscGroup:AddButton({
-    Title = "Tối Ưu FPS Boost (Tắt Hiệu Ứng Nặng)",
-    Callback = function()
-        pcall(function()
-            settings().Rendering.QualityLevel = "Level01"
-            for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("Decal") or v:IsA("Texture") then v.Transparency = 1
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then v.Lifetime = NumberRange.new(0)
-                end
-            end
-        end)
+-- Dropdown Chọn Vũ Khí
+TabFarm:AddDropdown({
+    Name = "Chọn Vũ Khí Sử Dụng",
+    Options = {"Melee", "Sword", "Demon Fruit"},
+    Default = "Melee",
+    Callback = function(Select)
+        _G.SelectWeapon = Select
+        print("Vũ khí đã chọn: ", Select)
     end
 })
 
-Fluent:Notify({
-    Title = "VHoc Hub Loaded",
-    Content = "Đã tải giao diện thành công!",
-    Duration = 5
+TabFarm:AddSection({"Tính Năng Khác"})
+
+-- Button Gom Quái
+TabFarm:AddButton({
+    Name = "Gom Quái (Bring Mob)",
+    Callback = function()
+        print("Đã bật Gom Quái!")
+    end
 })
 
-print("✅ VHoc Hub [Fluent Dark Raw] đã khởi chạy thành công!")
+-- ===================================================
+-- TAB 3: TRÁI ÁC QUỶ (FRUIT)
+-- ===================================================
+local TabFruit = Window:MakeTab({"Trái Ác Quỷ", "apple"})
+
+TabFruit:AddSection({"Tự Động Mua & Nhặt Trái"})
+
+TabFruit:AddButton({
+    Name = "Tự Động Mua Trái Ngẫu Nhiên (Random Fruit)",
+    Callback = function()
+        -- Code Mua Trái Random
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("Cousin", "Buy")
+    end
+})
+
+TabFruit:AddToggle({
+    Name = "Tự Động Cất Trái Vào Rương (Auto Store)",
+    Default = true,
+    Callback = function(Value)
+        _G.AutoStoreFruit = Value
+    end
+})
+
+-- ===================================================
+-- TAB 4: CÀI ĐẶT & TỐI ƯU (SETTINGS)
+-- ===================================================
+local TabSettings = Window:MakeTab({"Cài Đặt", "settings"})
+
+TabSettings:AddSection({"Tối Ưu Cloud Phone / Giảm Lag"})
+
+TabSettings:AddButton({
+    Name = "Bật Chế Độ Giảm Lag (Fast Mode)",
+    Callback = function()
+        -- Mẫu Code Xóa Đồ Họa Nặng Để Tăng FPS
+        local Terrain = workspace:FindFirstChildOfClass("Terrain")
+        if Terrain then
+            Terrain.WaterWaveSize = 0
+            Terrain.WaterWaveSpeed = 0
+            Terrain.WaterReflectance = 0
+            Terrain.WaterTransparency = 0
+        end
+        print("Đã tối ưu đồ họa cho Cloud Phone!")
+    end
+})
+
+TabSettings:AddButton({
+    Name = "Hủy Menu (Destroy UI)",
+    Callback = function()
+        RedzLib:Destroy()
+    end
+})
